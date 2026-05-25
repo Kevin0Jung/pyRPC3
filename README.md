@@ -52,6 +52,29 @@ python -m src.cli to-rsp output/WM0826rsp.csv --metadata output/WM0826rsp.rpc3me
 python -m src.cli to-rsp data.csv --template-rsp sample_rsp_files/WM0826rsp.rsp
 ```
 
+## 图形界面
+
+启动本地图形界面：
+
+```bash
+python -m src.gui
+```
+
+默认访问地址为 `http://127.0.0.1:8765`。界面包含两个区域：
+
+- `RSP -> CSV + JSON`：上传 `.rsp` 文件，输出 `.csv` 和 `.rpc3meta.json`
+- `CSV + JSON -> RSP`：上传 `.csv` 和对应的 `.rpc3meta.json`，输出 `.rsp`
+
+## 打包 Windows EXE
+
+安装 PyInstaller 后运行：
+
+```powershell
+.\build_exe.ps1
+```
+
+生成文件位于 `dist\pyRPC3-GUI.exe`。双击 exe 后会启动本地服务并自动打开浏览器界面。
+
 ## Python API
 
 ```python
@@ -155,6 +178,29 @@ If the CSV has a matching `.rpc3meta.json` sidecar, the converter reuses preserv
 python -m src.cli to-rsp output/WM0826rsp.csv --metadata output/WM0826rsp.rpc3meta.json
 python -m src.cli to-rsp data.csv --template-rsp sample_rsp_files/WM0826rsp.rsp
 ```
+
+## Graphical Interface
+
+Start the local graphical interface:
+
+```bash
+python -m src.gui
+```
+
+The default URL is `http://127.0.0.1:8765`. The interface has two work areas:
+
+- `RSP -> CSV + JSON`: upload an `.rsp` file and export `.csv` plus `.rpc3meta.json`
+- `CSV + JSON -> RSP`: upload a `.csv` file and its matching `.rpc3meta.json`, then export `.rsp`
+
+## Build Windows EXE
+
+Install PyInstaller, then run:
+
+```powershell
+.\build_exe.ps1
+```
+
+The generated executable is `dist\pyRPC3-GUI.exe`. Double-clicking the exe starts the local service and opens the browser interface automatically.
 
 ## Python API
 

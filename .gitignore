@@ -15,6 +15,9 @@ env/
 output/
 *.rpc3meta.json
 *.npz
+build/
+dist/
+*.spec
 
 .upload_pyRPC3/
 .local_git_probe/
