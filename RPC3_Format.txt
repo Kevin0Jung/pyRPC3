@@ -1,0 +1,1805 @@
+﻿RPC® File Formats 
+
+Introduction.................................................................................................................................. 2 
+
+RPC III File Organization ................................................................................................................ 3 
+
+RPC III File Headers....................................................................................................................... 4 
+
+Time History Files – Keywords......................................................................................................... 9 
+
+Time History Headers....................................................................................................................13 
+
+Time History Data ........................................................................................................................18 
+
+Histogram Files – Keywords...........................................................................................................20 
+
+Histogram Headers .......................................................................................................................27 
+
+Histogram Type Data Sets .............................................................................................................32 
+
+Rules for Working with Histogram Files ...........................................................................................34 
+
+Using Actuals and Overflow Values .................................................................................................35 
+
+1 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+Introduction 
+
+This document contains information on RPC III file formats. You can use the file format information to: 
+
+ Read and write RPC III files. 
+ Import non-RPC data into RPC III files. 
+
+Format information that is common to all RPC III files is provided at the start of the document. Format information 
+that is specific to each file type is provided in separate sections. At present, this information is provided for time 
+history and histogram file formats.  
+
+For information specific to time history file formats, refer to "Time History Files," from the above menu.  
+
+For information specific to histogram file formats, refer to "Histogram Files," from the above menu. 
+
+2 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+RPC III File Organization 
+
+Most RPC III files have the same basic format. 
+RPC III files are sequential, fixed length, 512-byte record files. 
+
+The files contain a standard header that is followed by data. The data headers describe the data content of the file. 
+The data portion of the file stores the actual data. There is no end-of-file character in an RPC III binary file. 
+
+An exception to this organization is a configuration file, which only contains a header. Configuration files are included 
+under time history files. 
+
+Figure 6-1 shows how a file is organized: 
+
+Figure 6-1. Organization of an RPC III File 
+
+3 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+RPC III File Headers 
+
+Header Function RPC III file headers describe the data in the file. The headers also contain information needed 
+to describe a specific file type. 
+
+NOTE  Although an equal sign (=) is not entered when typing the keyword 
+and associated value, it is included as part of a file header display. 
+
+Storage of Header The ASCII file header contains information stored as records in 512-byte blocks. Each record 
+Information in a block contains a keyword-value pair and is 128 bytes long. There are four records in each 
+
+block. 
+
+NOTE  If, as an example, a file header contained only ten records of keyword-
+value pairs, four of those records would be stored in block 1 of the 
+header, four of them in block 2, and two in block 3. Block 3 would also 
+include two records that did not include any keyword-value pairs. This 
+header would only include 3 blocks of records. 
+
+The following example record contains the keyword FILE_TYPE and the value HISTOGRAM: 
+
+FILE_TYPE = HISTOGRAM 
+
+Bytes are allocated to a keyword-value pair as shown in Figure 6-2. There are 128 bytes in a record. A keyword is 
+allocated a maximum of 32 bytes (including the null terminator). Each value is allocated a maximum of 96 bytes 
+(including the null terminator). 
+
+Figure 6-2. Allocation of a Keyword-Value Pair 
+
+The keyword-value pair character strings are stored in the header in a format that allows RPC III programs to access 
+them. RPC III programs use byte arrays for string manipulation because the programs use both C and FORTRAN 
+programming languages. 
+
+4 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+In a byte array, characters are stored as their ASCII values (in bytes), followed by a zero (0) that tells the program it 
+has reached the end of the character string. For example, "C" is stored as 67, "h" is stored as 104, and so on. The 
+array is dimensioned large enough to include the 0 used as a terminator.  
+
+For example, Figure 6-3 shows a null-terminated byte array that contains the word "Channel." 
+
+Figure 6-3. Null-Terminated Byte Array 
+
+Common record RPC III headers contain the following common records:  
+information 
+
+ Data storage format (binary or ASCII).  
+ Header size (in blocks).     
+ Number of parameters used by the file. 
+ File type.  
+ Date of file creation.  
+ Operation that created the file.  
+
+5 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+Table 6-1 describes the keywords and values associated with the common records. 
+
+Table 6-1. Keywords and Values Associated with Common Records 
+
+Keyword Description Possible Values Position 
+
+FORMAT Format in which data is stored.  Values are:  1 
+
+BINARY_IEEE_LITTLE_END 
+
+BINARY_IEEE_BIG_END 
+
+BINARY 
+
+ASCII  
+
+NOTE 
+
+The following binary values are 
+processed the same way 
+
+BINARY_IEEE_LITTLE_END 
+
+BINARY  
+
+NUM_HEADER_BLOCKS Number of 512-byte blocks used Up to 256 blocks  2 
+by the header information. 
+
+NUM_PARAMS Total number of parameters Maximum number of parameters 3 
+(keyword-value pairs) in the file is 1024 (256 ´ 4). 
+header. 
+
+FILE_TYPE Type of data file. File types are:  Any 
+
+Time history 
+
+Configuration 
+(subset of time history) 
+
+Matrix 
+
+Fatigue 
+
+6 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+Road surface 
+
+Spectral 
+
+Start 
+
+DATE Date and time the file or file Windows NT date and time. Any 
+header was created. 
+
+Example: 
+
+6-May-96 15:14:45 
+
+OPERATION Name of program or operation Any RPC III software program or Any 
+that created the file. operation.  
+
+Example:  
+
+SINESW 
+
+Record position The first three records of any RPC III file header are position-sensitive. The FORMAT, 
+NUM_HEADER_BLOCKS, and NUM_PARAMS keywords should always be in positions 1, 2, and 
+3 respectively in the header. All subsequent keywords can be placed in any position. The 
+arbitrary placement of all but the first three keywords removes the need to count the number 
+of bytes in order to determine a particular value. This structure also allows you to add a 
+record to a file header without changing the way other files function.  
+
+However, because the records are position independent, certain keyword-value pairs may 
+take longer to locate. For example, channel descriptors and unit descriptors may take a long 
+
+  time to locate. To reduce searching time, these should be listed in sequence in the file 
+header.  
+
+Record maximum There is no actual maximum for the number of records that can be placed in the header. 
+Most RPC III programs create a temporary file to hold the header records before combining 
+the header with the data. This temporary file (HEADER.TEMP) initially contains 1024 records. 
+If the number of records in the header exceeds 1024, both the temporary file and the final 
+data file are automatically extended. The number of records is limited only by the disk space 
+available to hold both the header records and the data in one file. Similarly, if there are fewer 
+than 1024 records, the size of the header is reduced when the header and data are combined 
+in one file.  
+
+RPC III Data RPC III data is placed directly after the header. Refer to individual sections for detailed 
+information on how data is stored for each file type.  
+
+7 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+RPC III File Types The RPC III software uses the following file types:  
+
+ TIME_HISTORY  
+ CONFIGURATION (Subset of TIME_HISTORY)  
+ MATRIX  
+ FATIGUE  
+ ROAD_SURFACE  
+ SPECTRAL  
+ START  
+
+A file type may contain different kinds of files. For example, there are seven kinds of time 
+histories included under the TIME_HISTORY file type.  
+
+Each file included under a file type is identified in the header. For example, each type of time 
+history is identified by the value in the TIME_TYPE keyword-value pair. A drive time history 
+can have the value 1 or the value DRIVE, a response configuration file can have the value 6 or 
+the value CONFIG_RESP. (Earlier versions of RPC III software use numbers.) 
+
+The following sections describe RPC III file formats and information specific to time history 
+and histogram files. 
+
+8 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+Time History Files – Keywords 
+
+The header contains the keywords listed in Table 6-2: 
+
+Table 6-2. Keywords Included in Header 
+
+Keyword Description Possible Values
+
+BYPASS_FILTER Turns A/D filtering on or off. Options:  
+
+0 Uses the filter (BYPASS_FILTER is off) 
+
+1 Does not use the filter (BYPASS_FILTER is on) 
+
+CHANNELS Number of channels in the file. Range of channels is 1 to 128. 
+
+DATA_TYPE Numbers contained in the data Data types are:  
+of the file are of this type. 
+
+SHORT_INTEGER  
+(Default used by all RPC III programs)  
+
+FLOATING_POINT  
+(Not supported by RPC III V5.0x programs) 
+
+DATE Date and time the file or file NTFS date and time. 
+header was created. Example:  
+
+22-Feb-2000   10:20:11 
+Format: 
+dd-mm-yyy  hh:mm:ss 
+
+DELTA_T Time interval between A real number.  
+consecutive points of data (in 
+seconds). Example: 4.882812E-03 
+
+Format is E8.6  
+
+DESC.CHAN_n ASCII description of the If a user enters a description that contains more than one word 
+specified channel. This separated by blanks, the user must enclose the words in 
+description is repeated for each quotation marks (" ").  
+channel in the file. 
+
+Maximum number of characters allowed is 96 if you output an 
+RPC III file, 20 if you output an RPC II file. 
+
+Example: "Left longitudinal axis" 
+
+9 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+FILE_TYPE Type of data file. File type is:  
+
+TIME_HISTORY 
+
+FORMAT Format in which data is stored.  Data storage formats are:  
+
+BINARY_IEEE_LITTLE_END 
+
+BINARY_IEEE_BIG_END 
+
+BINARY 
+
+ASCII 
+
+FRAMES Number of frames of data stored in a Any valid number of frames. 
+file. A frame is set of data points 
+ranging from 2 to any integer that is a 
+power of 2. The maximum number of 
+points in a frame is 8192. 
+
+HALF_FRAMES Specifies whether a half frame is Options:  
+added to the beginning and end of a 
+file to allow some forms of 0 No half frames added 
+mathematical processing. The half 
+frames contain no data although they 
+increase the size of the file by one 1 Half frames added 
+frame. 
+
+INT_FULL_SCALE The maximum 16 bit integer value of Default value is 32752 
+the data  (which is 2^16 - 16) 
+
+LOWER_LIMIT.CHAN_n Lower limit value defined for channel Any valid number. 
+n. 
+
+MAP.CHAN_n Physical channel to which logical Any valid physical channel number. If you are working 
+channel is mapped. with multi-rate responses or a multi-test setup, channel 
+
+mapping changes. For further information on the channel 
+mapping changes, refer to RSURF program 
+documentation in the RPC III Program Reference Manual. 
+
+NUM_HEADER_BLOCKS Number of 512-byte blocks used by Up to 256 blocks 
+the header information.  Example: 9 
+
+NUM_PARAMS Total number of parameters Maximum number of parameters is 1024  
+(keyword-value pairs) in the file (256 ´ 4). 
+header. 
+
+10 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+OPERATION Name of program or operation that Any RPC III software program or operation. 
+created the file.   Example: SINESW 
+
+PARENT_k File(s) from which this file was Any valid NTFS file name(s).  
+created. (k represents number of file.) 
+
+Example: 
+C:\TEST\DATA\POT.RSP  
+
+PART.CHAN_n First channel assigned to partition n. Any valid integer.  Default value is 1. 
+
+PART.NCHAN_n Number of consecutive channels Any valid integer. Default value is the value in the 
+assigned to partition n. keyword CHANNELS. 
+
+PARTITIONS The number of groups of channels Range is 1 to 128 partitions. Default value is 1. 
+wanted. A partition is a submatrix 
+within a matrix file.  
+
+You should specify partitions if you 
+anticipate that numerical operations 
+on a time history data file will create a 
+matrix file. 
+
+PTS_PER_FRAME Integer that indicates number of Options are 256, 512, 1024, and 2048 points and is a 
+points per frame of stored data. Must function of PTS_PER_GROUP. PTS_PER_FRAME must be £ 
+be a power of 2. PTS_PER_GROUP. 
+
+PTS_PER_GROUP Total number of data points in the Integer sum of all points. 
+group.  
+
+A group is a set of 2n data frames in a 
+channel. For example, if there are 4 
+frames in a group, then 
+PTS_PER_GROUP is the sum of the 
+points of those four frames: 
+
+Frame 1 = 2048 points 
+Frame 2 = 2048 points 
+Frame 3 = 2048 points 
+Frame 4 = 2048 points 
+Points per group   
+
+= 2048 ´4 
+= 8192 points 
+
+REPEATS Number of times the frame is Typically 1 repeat. 
+identically repeated within the file the 
+first time the file is played out. This 
+record is used for time history files 
+that are used in frequency response 
+function measurement. 
+
+11 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+SCALE.CHAN_n Value used to multiply the binary 16- Example value: 3.053249E-04  
+bit converter value to find the 
+engineering unit full-scale value.  The  Format is E8.6 
+value is calculated by dividing the    (10.0 volts/32752.0 = 3.053249E-04) 
+engineering unit full scale by the 
+integer full scale. 
+
+TIME_TYPE Type of time history.  Older files (V4.0 Time history types are:  
+and older) used the numeric 
+representation.  Newer files use the 1 DRIVE (drive file) 
+ASCII representation. 
+
+2 RESPONSE (response file) 
+
+3 MULT_DRIVE (multiplexed drive file) 
+
+4 MULT_RESP (multiplexed response file) 
+
+5 CONFIG_DRIVE (drive configuration file) 
+
+6 CONFIG_RESP (response configuration file) 
+
+7 PEAK_PICK (peak-picked file) 
+
+UNITS.CHAN_n ASCII description of the engineering Any valid unit. If a user enters a description that contains 
+units associated with the channel. This more than one word separated by blanks, the user must 
+description is repeated for each enclose the words in quotation marks 
+channel in the file. (" ").  
+
+Maximum number of characters allowed is 96 if you 
+output an RPC III file, 20 if you output an RPC II file. 
+
+Example value: "Micro Strain" 
+
+UPPER_LIMIT.CHAN_n Upper limit value defined for channel Any valid number. 
+n. 
+
+12 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+Time History Headers 
+
+Example file 4CH.DRV is an example of a file provided by TAD, which contains both data and a time history 
+file header. A TEDIT display of the first four frames of 4CH.DRV is shown in Figure 6-4. 
+
+Figure 6-4. Start of 4CH.DRV 
+
+13 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+Example header Either of two options are available for viewing the keyword-value pairs in a time history file 
+header. You can use DUMP_RPC3 to display the header as shown in Figure 6-5. 
+
+Figure 6-5. Header from 4CH.DRV 
+
+D:>dump_rpc3 4ch.drv 
+
+r DUMP.PARAMS YES 
+
+DUMP_RPC3 - MTS Remote Parameter Control Software - RELEASE 4.2A 24-MAY-1996 
+
+r LAST.USED d:\dahlenp\data\4ch.drv 
+
+w LAST.USED d:\dahlenp\data\4ch.drv 
+
+w LAST.USED d:\dahlenp\data\4ch.drv 
+
+r DEVICE.LISTING TERMINAL 
+
+r DEVICE.TERM xwin 
+
+w DEVICE.LISTING TERMINAL 
+
+FORMAT = BINARY_IEEE_LITTLE_END 
+
+NUM_HEADER_BLOCKS = 12 
+
+NUM_PARAMS = 45 
+
+FILE_TYPE = TIME_HISTORY 
+
+DATA_TYPE = SHORT_INTEGER 
+
+TIME_TYPE = DRIVE 
+
+DELTA_T = 4.882813E-03 
+
+PTS_PER_FRAME = 1024 
+
+CHANNELS = 4 
+
+14 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+PTS_PER_GROUP = 2048 
+
+BYPASS_FILTER = 0 
+
+HALF_FRAMES = 0 
+
+REPEATS = 0 
+
+FRAMES = 12 
+
+SCALE.CHAN_1 = 1. 
+
+UPPER_LIMIT.CHAN_1 = 1. 
+
+LOWER_LIMIT.CHAN_1 = -1. 
+
+MAP.CHAN_1 = 1 
+
+SCALE.CHAN_2 = 1. 
+
+UPPER_LIMIT.CHAN_2 = 1. 
+
+LOWER_LIMIT.CHAN_2 = -1. 
+
+MAP.CHAN_2 = 2 
+
+SCALE.CHAN_3 = 1. 
+
+UPPER_LIMIT.CHAN_3 = 1. 
+
+LOWER_LIMIT.CHAN_3 = -1. 
+
+MAP.CHAN_3 = 3 
+
+SCALE.CHAN_4 = 1. 
+
+UPPER_LIMIT.CHAN_4 = 1. 
+
+LOWER_LIMIT.CHAN_4 = -1. 
+
+MAP.CHAN_4 = 4 
+
+PARTITIONS = 1 
+
+PART.CHAN_1 = 1 
+
+15 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+PART.NCHAN_1 = 4 
+
+DESC.CHAN_1 = left front vert 
+
+UNITS.CHAN_1 = in 
+
+DESC.CHAN_2 = right front vert 
+
+UNITS.CHAN_2 = in 
+
+DESC.CHAN_3 = left rear vert 
+
+UNITS.CHAN_3 = in 
+
+DESC.CHAN_4 = right rear vert 
+
+UNITS.CHAN_4 = in 
+
+DATE = 05-Oct-95 14:19:14 
+
+OPERATION = TAD 
+
+PARENT_1 = d:\dahlenp\data\4ch_nt.drv 
+
+INT_FULL_SCALE = 32752 
+
+Figure 6-5. Header from 4CH.DRV 
+
+16 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+Or, you can select File Header... from the Show menu on the TEDIT window to display the following listing, which is 
+not as complete as the one shown in Figure 6-5. 
+
+17 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+Time History Data 
+
+Groups and Frames RPC III places the data in time history files in groups, and it divides the 
+groups of data into frames. The size of a frame can range from 256 to 
+16384 data points, while the size of a group can range from 2048 to 
+16384 data points. This grouping is referred to as demultiplexed blocks.  
+
+Demultiplexed data Figure 6-6 illustrates an example of the sequence used. There it is 
+assumed that we are processing four-channels of time history data, which 
+is divided into frames that contain 1024 data points, and groups that 
+contain 4096 data points or four frames. 
+
+Note: Time History Data is stored in Single Precision floating point, 
+which is 32 bit. The range is +/-  3.4028235E+38.
+
+Figure 6-6. Data in a multiplexed block 
+
+18 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+Figure 6-6 represents the first block of a data file. The second block contains data points 4097 through 8194 of 
+Channels 1 through 4. This sequence of blocks continues until the final block, which may not be completely filled with 
+time history data. 
+
+Assume that there are 2304 data points remaining in Channels 1 through 4 for storage in the last block of the time 
+history data file. That block is shown in Figure 6-7. 
+
+Figure 6-7. Data in last multiplexed block 
+
+In the last block of the example shown in Figure 6-7, the first and second frame for each channel includes 1024 points 
+of time history data, while the third frame includes only 256 points of time history data. The remaining 768 data 
+points in the third frame, and all 1024 data points in the fourth frame are set to 0. 
+
+19 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+Histogram Files – Keywords 
+
+Table 6-3 contains a list of all keywords used in  histogram file headers.histogram file headers. 
+
+ Table 6-3. Keywords Used in Histogram File Headers 
+
+Keyword Description Possible Values
+
+ACTUALS_DEFINED Whether the histogram actuals are YES Actuals are defined. 
+defined. 
+
+NO Actuals are not defined. 
+
+CHANNELS Number of channels in the file. Range of channels is 1 to 128. 
+
+COL_ACTUALS.CHAN_n The column variable actuals where n A data set of real values.  
+is the number of the channel.  
+
+Used when HISTOGRAM_TYPE is one of the following:  
+This data set contains the following 
+members: • GENERIC_2D
+
+• GENERIC_3D
+Minimum • LEVEL_CROSS
+
+Maximum 
+
+COL_DESC.CHAN_n ASCII description of the column Any string. Maximum number of characters allowed is 
+variable for the specified channel n. 96 (95 + null-byte terminator).  
+This descriptor varies from one 
+column to the next. A user enters this description when prompted to do so 
+
+by a program. If a user enters a description that 
+contains more than one word separated by blanks, the 
+user must enclose the words in quotation marks (" ").  
+
+Example: 
+
+"Left longitudinal axis" 
+
+20 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+COL_PARMS.CHAN_n The histogram column bounding set where A data set containing values. The maximum, 
+n is the number of the channel.  minimum, and reference number are reals. The 
+
+number of bins and levels are integers.  
+When HISTOGRAM_TYPE is GENERIC_2D 
+or GENERIC_3D, this data set contains the Used when HISTOGRAM_TYPE is one of the 
+following members:  following:  
+
+• Minimum • GENERIC_2D
+• Maximum • GENERIC_3D
+• Number of bins • LEVEL_CROSS
+
+When HISTOGRAM_TYPE is LEVEL_CROSS, 
+this data set contains the following 
+members:  
+
+• Minimum
+• Maximum
+• Reference
+• Levels
+
+COL_UNITS.CHAN_n ASCII description of the engineering units Any valid engineering unit value.  
+associated with the column variable for a 
+specified channel n. Maximum number of characters allowed is 96 (95 
+
++ null-byte terminator). 
+
+If a user enters a description that contains more 
+than one word separated by blanks, the user must 
+enclose the words in quotation marks (" ").  
+
+Examples: Deg, mm, "micro strain" 
+
+DATE Date and time the file was created. Windows NT date and time.  
+
+Example:  
+
+6-May-96 15:14:45 
+
+FILE_TYPE Type of data file. File type is HISTOGRAM. 
+
+FORMAT Format in which data is stored. Data storage format is: 
+
+BINARY_IEEE_LITTLE_END or 
+BINARY_IEEE_BIG_END 
+
+HISTOGRAM_DATA_TYPE Bin data format (including overflow data). Data type must be HIST_FLOAT. 
+
+HISTOGRAM_OFFSET.  Block pointer to start of data for the Integer value. 
+
+21 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+channel n. This value is referenced from 
+CHAN_n the first header block which is 0 (not 1). 
+
+HISTOGRAM_TYPE The type of histogram. Histogram types are histogram class-dependent.  
+
+RANGE_MEAN 
+
+RANGESTRAIN_ MEANSTRESS 
+
+RANGESTRAIN_ MAXSTRESS 
+
+RANGE 
+
+MIN_MAX (minimums are rows, maximums are 
+columns) 
+
+If you select RAINFLOW_CYCLES or 
+RAINFLOW_DAMAGE, valid histogram types are: 
+
+If you select PD_COUNTS, valid histogram types 
+are:  
+
+GENERIC_3D 
+
+GENERIC_2D 
+
+If you select LX_COUNTS, the valid histogram type 
+is LEVEL_CROSS 
+
+MAX_ACTUALS.CHAN_n Maximum stress actuals for a specified A data set of real values.  
+channel n.  
+
+Used when HISTOGRAM_TYPE is RANGESTRAIN_ 
+A data set that contains the following MAXSTRESS 
+members: 
+
+Minimum 
+
+Maximum 
+
+MAX_OVERFLOW.  Maximum stress overflow counts for a A data set of real values.  
+specified channel n.  
+
+CHAN_n Used when HISTOGRAM_TYPE is RANGESTRAIN_ 
+A data set that contains the following MAXSTRESS 
+members: 
+
+Under 
+
+Over 
+
+22 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+MAX_PARMS.CHAN_n The histogram maximum stress bounding A data set containing values. The maximum and 
+set for a specified channel n.  minimum are reals; the number of bins is an 
+
+integer.  
+A data set that contains the following 
+members: Used when HISTOGRAM_TYPE is RANGESTRAIN_ 
+
+MAXSTRESS 
+Minimum 
+
+Maximum 
+
+Number of bins 
+
+MEAN_ACTUALS.CHAN_n Mean level actuals for a specified channel A data set of real values.  
+n.  
+
+Used when HISTOGRAM_TYPE is one of the 
+A data set that contains the following following:  
+members: 
+
+• RANGE_MEAN
+Minimum • RANGESTRAIN_ MEANSTRESS
+
+Maximum 
+
+MEAN_OVERFLOW.  Mean overflow counts for a specified A data set of real values.  
+channel n.  
+
+CHAN_n Used when HISTOGRAM_TYPE is one of the 
+A data set that contains the following following:  
+members: 
+
+• RANGE_MEAN
+Under • RANGESTRAIN_ MEANSTRESS
+
+Over 
+
+MEAN_PARMS.CHAN_n The histogram mean bounding set for a A data set containing values. The maximum and 
+specified channel n.  minimum are reals; the number of bins is an 
+
+integer.  
+A data set that contains the following 
+members: Used when HISTOGRAM_TYPE is one of the 
+
+following:  
+Minimum 
+
+• RANGE_MEAN
+Maximum • RANGESTRAIN_ MEANSTRESS
+
+Number of bins 
+
+23 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+MIN_MAX_ACTUALS.  The actual minimum and maximum A data set of real values.  
+values for a specified channel n.  
+
+CHAN_n Used when HISTOGRAM_TYPE is MIN_MAX. 
+A data set that contains the following 
+members: 
+
+Minimum 
+
+Maximum 
+
+MIN_MAX_OVERFLOW.  The minimum and maximum overflow A data set of real values.  
+counts for a specified channel n.  
+
+CHAN_n Used when HISTOGRAM_TYPE is MIN_MAX. 
+A data set that contains the following 
+members:  
+
+Under 
+
+Over 
+
+MIN_MAX_PARMS.  The histogram bounding set for a A data set that contains values. The maximum and 
+specified channel n.  minimum are reals; the number of bins is an integer.  
+
+CHAN_n 
+A data set that contains the following Used when HISTOGRAM_TYPE is MIN_MAX. 
+members: 
+
+Minimum 
+
+Maximum 
+
+Number of bins 
+
+NUM_HEADER_BLOCKS Number of 512-byte blocks used by the Up to 256 blocks.  
+header information. 
+
+Example: 9 
+
+NUM_PARAMS Total number of parameters (keyword- Changes according to the number of channels in the 
+value pairs) in the file header. file. 
+
+OPERATION Name of program or process that Any RPC III software program or operation.  
+created the file. 
+
+Example: DAMAGECYCLE 
+
+OVERFLOW_DEFINED Whether histogram overflow and YES Overflow and underflow bins are defined 
+underflow bins are defined. 
+
+ NO Overflow and underflow bins are not defined 
+
+PARENT_n File(s) from which this file was created. Any valid NTFS file name(s). 
+
+24 
+
+
+
+ RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+ 
+
+ 
+ 
+
+RANGE_ACTUALS.CHAN_n Range actuals for a specified channel A data set of real values.  
+n.  
+
+Used when HISTOGRAM_TYPE is one of the following:  
+This data set contains the following 
+members: • RANGE_MEAN  
+
+• RANGESTRAIN_ MEANSTRESS  
+Minimum • RANGESTRAIN_ MAXSTRESS  
+
+• RANGE  
+Maximum 
+
+  
+
+RANGE_OVERFLOW.  Range overflow counts for a specified A data set of real values.  
+channel n.  
+
+CHAN_n Used when HISTOGRAM_TYPE is one of the following:  
+This data set contains the following 
+members: • RANGE_MEAN  
+
+• RANGESTRAIN_ MEANSTRESS  
+Under • RANGESTRAIN_ MAXSTRESS  
+
+• RANGE  
+Over 
+
+  
+
+RANGE_PARMS.CHAN_n The histogram range bounding set for A data set of values. The maximum and minimum are 
+a specified channel n. The range is the reals; the number of bins is an integer.  
+difference between successive peaks 
+and valleys.  Used when HISTOGRAM_TYPE is one of the following:  
+
+This data set contains the following • RANGE_MEAN  
+members: • RANGESTRAIN_ MEANSTRESS  
+
+• RANGESTRAIN_ MAXSTRESS  
+Minimum • RANGE  
+
+Maximum 
+  
+
+Number of bins 
+
+RESIDUALS.CHAN_n Number of residuals (peaks and Positive integer or zero (0). Zero means there are no 
+valleys from the unclosed cycles from unclosed cycles. 
+a Rainflow cycle histogram). 
+
+ 25 
+ 
+
+
+
+RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+
+ROW_ACTUALS.CHAN_n Row actuals for a specified channel n.  A data set of real values.  
+
+This data set contains the following Used when HISTOGRAM_TYPE is GENERIC_3D. 
+members: 
+
+Minimum 
+
+Maximum 
+
+ROW_DESC.CHAN_n ASCII description of the row variable A string. Maximum number of characters allowed is 96 
+for a specified channel n. This (95 + null-byte terminator).  
+descriptor varies from one row to the 
+next. If a user enters a description that contains more than 
+
+one word separated by blanks, the user must enclose 
+the words in quotation marks (" ").  
+
+Example:  
+
+"Left longitudinal axis" 
+
+ROW_PARMS.CHAN_n The histogram bounding set for a A data set of values. The maximum and minimum are 
+specified channel n.  reals; the number of bins is an integer.  
+
+This data set contains the following Used when HISTOGRAM_TYPE is GENERIC_3D. 
+members: 
+
+Minimum 
+
+Maximum 
+
+Number of bins. 
+
+ROW_UNITS.CHAN_n ASCII description of the engineering Any valid engineering unit.  
+units associated with the row variable 
+for a specified channel n.  Maximum number of characters allowed is 96 (95 + 
+
+null-byte terminator). 
+
+If a user enters a description that contains more than 
+one word separated by blanks, the user must enclose 
+the words in quotation marks (" ").  
+
+Examples:  
+
+Deg, mm, volts, "micro strain" 
+
+26 
+
+
+
+ RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+ 
+
+ 
+
+Histogram Headers 
+ 
+Example header Figure 6-8 shows an example of a histogram header: 
+
+  
+
+Figure 6-8. Example of Histogram Header 
+
+d:\dahlenp>dump_rpc3 4ch.lvl  
+
+r DUMP.PARAMS YES 
+
+DUMP_RPC3 - MTS Remote Parameter Control Software - RELEASE 4.2A 24-MAY-1996 
+
+r LAST.USED d:\dahlenp\data\4ch.drv 
+
+w LAST.USED d:\dahlenp\data\4ch.lvl 
+
+w LAST.USED d:\dahlenp\data\4ch.lvl 
+
+r DEVICE.LISTING TERMINAL 
+
+r DEVICE.TERM xwin 
+
+w DEVICE.LISTING TERMINAL 
+
+FORMAT = BINARY_IEEE_LITTLE_END 
+
+NUM_HEADER_BLOCKS = 13 
+
+NUM_PARAMS = 49 
+
+FILE_TYPE = HISTOGRAM 
+
+HISTOGRAM_DATA_TYPE = FLOAT 
+
+HISTOGRAM_CLASS = LX_COUNTS 
+
+HISTOGRAM_TYPE = LEVEL_CROSS 
+
+ACTUALS_DEFINED = YES 
+
+OVERFLOW_DEFINED = NO 
+
+ 27 
+ 
+
+
+
+ RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+ 
+
+ 
+
+CHANNELS = 4 
+
+DATE = Mon Oct 09 13:00:54 1995 
+
+OPERATION = LEVELCROSS 
+
+PARENT_1 = d:\dahlenp\data\4ch.drv 
+
+ROW_DESC.CHAN_1 = N/A 
+
+COL_DESC.CHAN_1 = left front vert 
+
+ROW_UNITS.CHAN_1 = N/A 
+
+COL_UNITS.CHAN_1 = in 
+
+NOISEBAND.CHAN_1 = 0. 
+
+COL_PARMS.CHAN_1 = -1.091515e+004 1.091515e+004 0.000000e+000 3 
+
+COL_ACTUALS.CHAN_1 = -1.637600e+004 1.637600e+004 
+
+RESIDUALS.CHAN_1 = 0 
+
+DATA_OFFSET.CHAN_1 = 13 
+
+ROW_DESC.CHAN_2 = N/A 
+
+COL_DESC.CHAN_2 = right front vert 
+
+ROW_UNITS.CHAN_2 = N/A 
+
+COL_UNITS.CHAN_2 = in 
+
+NOISEBAND.CHAN_2 = 0. 
+
+COL_PARMS.CHAN_2 = -1.091515e+004 1.091515e+004 0.000000e+000 3 
+
+COL_ACTUALS.CHAN_2 = -1.637600e+004 1.637600e+004 
+
+RESIDUALS.CHAN_2 = 0 
+
+DATA_OFFSET.CHAN_2 = 14 
+
+ROW_DESC.CHAN_3 = N/A 
+
+ 28 
+ 
+
+
+
+ RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+ 
+
+ 
+
+COL_DESC.CHAN_3 = left rear vert 
+
+ROW_UNITS.CHAN_3 = N/A 
+
+COL_UNITS.CHAN_3 = in 
+
+NOISEBAND.CHAN_3 = 0. 
+
+COL_PARMS.CHAN_3 = -1.091515e+004 1.091515e+004 0.000000e+000 3 
+
+COL_ACTUALS.CHAN_3 = -1.637600e+004 1.637600e+004 
+
+RESIDUALS.CHAN_3 = 0 
+
+DATA_OFFSET.CHAN_3 = 15 
+
+ROW_DESC.CHAN_4 = N/A 
+
+COL_DESC.CHAN_4 = right rear vert 
+
+ROW_UNITS.CHAN_4 = N/A 
+
+COL_UNITS.CHAN_4 = in 
+
+NOISEBAND.CHAN_4 = 0. 
+
+COL_PARMS.CHAN_4 = -1.091515e+004 1.091515e+004 0.000000e+000 3 
+
+COL_ACTUALS.CHAN_4 = -1.637600e+004 1.637600e+004 
+
+RESIDUALS.CHAN_4 = 0 
+
+DATA_OFFSET.CHAN_4 = 16 
+
+  
+
+  
+
+ 29 
+ 
+
+
+
+ RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+ 
+
+ 
+ 
+Example data block The histogram data array and residual peak-valley sequence are stored back-to-back in 
+
+contiguous 512-byte blocks. These blocks are ordered by rows and consist of a maximum of 
+128 reals (32-bit) per block. 
+
+The data blocks shown in Figure 6-9 are repeated for each channel. 
+
+ 
+
+ 
+
+Figure 6-9. Data Blocks Storing Histogram Data Array and Residual 
+
+ 
+NOTE There will typically be some unused bytes in the last block 
+
+written for each channel. 
+
+  
+
+The block to start the write is referenced from the first block (which is 0). 
+
+  
+
+ 30 
+ 
+
+
+
+ RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+ 
+
+ 
+Figure 6-10 shows an example of how the data is organized using a histogram with four bins. The histogram has a 
+residual peak-valley sequence of –237.3, +992.6. 
+
+ 
+
+ 
+
+Figure 6-10. Example of How Data is Organized 
+
+ 31 
+ 
+
+
+
+ RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+ 
+
+ 
+Histogram Type Data Sets 
+
+Each histogram type and the keywords used by each type are listed next. They are shown in Table 6-4. 
+
+  
+
+Table 6-4. Each Histogram Type and Associated Keywords 
+
+Histogram Type Histogram Keywords 
+
+RANGE_PARMS.CHAN_n  
+
+MEAN_PARMS.CHAN_n  
+
+RANGE_MEAN  RANGE_ACTUALS.CHAN_n  
+
+or RANGESTRAIN_MEANSTRESS MEAN_ACTUALS.CHAN_n  
+
+RANGE_OVERFLOW.CHAN_n  
+
+MEAN_OVERFLOW.CHAN_n 
+
+RANGE_PARMS.CHAN_n  
+
+MAX_PARMS.CHAN_n  
+
+RANGE_ACTUALS.CHAN_n  
+RANGESTRAIN_MAXSTRESS 
+
+MAX_ACTUALS.CHAN_n  
+
+RANGE_OVERFLOW.CHAN_n  
+
+MAX_OVERFLOW.CHAN_n 
+
+   
+
+MIN_MAX_PARMS.CHAN_n  
+MIN_MAX  
+
+MIN_MAX_ACTUALS.CHAN_n  
+
+MIN_MAX_OVERFLOW.CHAN_n 
+
+ 32 
+ 
+
+
+
+ RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+ 
+
+ 
+ 
+
+RANGE_PARMS.CHAN_n  
+
+RANGE RANGE_ACTUALS.CHAN_n  
+
+RANGE_OVERFLOW.CHAN_n 
+
+COL_PARMS.CHAN_n  
+GENERIC_2D 
+
+COL_ACTUALS.CHAN_n 
+
+COL_PARMS.CHAN_n  
+
+ROW_PARMS.CHAN_n  
+GENERIC_3D 
+
+COL_ACTUALS.CHAN_n  
+
+ROW_ACTUALS.CHAN_n 
+
+COL_PARMS.CHAN_n  
+LEVEL_CROSS 
+
+COL_ACTUALS.CHAN_n 
+
+ 
+
+ 33 
+ 
+
+
+
+ RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+ 
+
+ 
+
+Rules for Working with Histogram Files 
+ 
+The following rules control use of the HISTOGRAM_CLASS and HISTOGRAM_SUBCLASS_n header keyword-value pairs. The rules 
+should help you avoid performing incorrect histogram operations such as adding damage histograms to cycles histograms. The rules 
+also allow programs like HISTPRINT and HISTPLOT to have titles such as "Rainflow Cycles Histogram" or "Worst Case Morrow 
+Rainflow Damage Histogram." 
+
+• The HISTOGRAM_CLASS header keyword is used to control program operations.  
+• The HISTOGRAM_SUBCLASS_n keywords are used (where appropriate) to help identify the histogram. These keywords do 
+
+not control program operations.   
+
+Input/output rules Fatigue programs (and controller processing) use the histogram input/output rules listed in Table 6-5: 
+
+Table 6-5. Histogram Input/Output Rules 
+
+ 
+
+Program Input Rule Output Rule 
+
+Controller real-time process Not applicable. Only creates a RAINFLOW_CYCLES histogram. 
+
+DAMAGECYCLE Not applicable. Only creates a RAINFLOW_CYCLES histogram. 
+
+Only accepts a RAINFLOW_CYCLES Only creates a RAINFLOW_DAMAGE histogram, that has 
+histogram. two subclasses; one for damage model (for example, 
+
+DAMAGEHIST  
+SWT) and the other for damage scenario case (for 
+example, WORST). 
+
+Only accepts RAINFLOW_CYCLES Only creates an accumulated RAINFLOW_CYCLES 
+HISTACCUM 
+
+histograms (with unclosed residuals). histogram. 
+
+HISTCONVERT  Only accepts RAINFLOW_CYCLES, Only creates RAINFLOW_CYCLES or RAINFLOW_DAMAGE 
+RAINFLOW_DAMAGE, or PD_COUNTS histograms.  
+(with HISTOGRAM_TYPE = 
+GENERIC_3D) histograms as inputs. The RAINFLOW_DAMAGE subclasses are passed as long 
+
+as they make sense. This is true for all situations except 
+for the RangeMean2Range conversion. The histogram 
+scenario case must be set to GENERIC if the damage 
+model is SWT or MORROW. This is done to avoid 
+comparing two interpretations that are not equivalent. 
+For example, a worst case RangeMean interpretation is 
+not equivalent to a worst case range interpretation if 
+mean or maximum stress is involved. 
+
+HISTPRINT and HISTPLOT Accept all classes and subclasses. Not applicable. 
+
+LEVELCROSS  Not applicable. Only creates an LX_COUNTS histogram. 
+
+PDHIST  Not applicable. Only creates a PD_COUNTS histogram. 
+
+RAINFLOW Not applicable. Only creates a RAINFLOW_CYCLES histogram. 
+
+ 34 
+ 
+
+
+
+ RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+ 
+
+ 
+Using Actuals and Overflow Values 
+ 
+
+Actuals and overflows Histogram file headers may contain actuals and overflow information. The actuals are the actual data 
+values in a time history (for example a maximum and minimum). The overflow data is the data collected 
+when some cycles (or other counts) exceed the histogram boundaries during data collection and sorting. 
+These cycles are counted in the overflow bins. The actuals and overflow values are only created when you 
+manually define the histogram boundaries for a data collection session.  
+
+  
+Using actuals and Placing the actuals and overflow data in the header gives you access to the information needed to reset 
+overflows the histogram bounding keywords to accommodate the overflow values. A program or a process can then 
+
+be repeated to capture the overflow data in the histogram bins without generating further overflows.  
+
+  
+Collecting histogram You collect histogram data as follows:  
+data 
+
+• Online, during iterations or a durability test. You use BTREND or BDAMAGE (optional) to collect 
+histogram data online.  
+
+• Offline, after your durability test is complete. You use RAINFLOW, DAMAGEHIST, LEVELCROSS, 
+and HISTACCUM to create histograms offline.  
+
+Online histogram data When you collect histogram data online during a test, you have to define the histogram boundaries 
+collection manually. This is because you define the histogram boundaries before you know what the actual boundary 
+
+definition values such the maximum and minimum will be. Therefore, you have to define the boundaries 
+based on an estimate of what you think the values for the boundaries will be.  
+
+If you set the boundary definition values too low, the software will place all values that exceed the 
+boundary definition values in the overflow bins. The following rules apply:  
+
+• If the number of data overflows does not exceed the allowed maximum number of overflows, the 
+software increases the size of the histogram to accommodate the overflow values after the test is 
+complete.  
+
+• If the number of overflow values exceeds the allowed maximum number of overflows, the 
+allowed overflows are placed in the histogram and the additional overflow data is kept after the 
+test is complete. However, because all the overflow histogram data is not added to the 
+histogram, the histogram is missing data and may be unusable.  
+
+If you set the boundary values too high (for example, to the full-scale values), your data may end up 
+placed in too few bins to be usable.  
+
+  
+
+ 35 
+ 
+
+
+
+ RPC® FILE FORMATS 
+Introduction RPC® III File Organization RPC® III File Headers Time History Files Histogram Files 
+
+Keywords Keywords 
+Time History Headers Histogram Headers 
+Time History Data Histogram Type Data Sets 
+
+Rules for Working with Histogram Files 
+Using Actual and Overflow Values 
+ 
+
+ 
+ 
+Offline histogram When you collect histogram data offline, you can define the histogram boundaries automatically or 
+data collection manually.  
+
+The offline histogram software processes response files that already exist. Therefore, if you allow the 
+software to automatically define the boundaries, there will be no overflow bins. 
+
+If you manually define the histogram boundaries, any values that fall outside the manually-defined limits 
+are placed in overflow bins.  
+
+  
+Programs that use The actuals and overflow keywords are only used in some of the derived histogram files. For example, 
+actuals and overflows they are not used by DAMAGEHIST. Therefore, they do not exist in all histogram file headers. Whether or 
+
+not actuals and overflows are used by a particular histogram file is defined by the header keyword-values 
+ACTUALS_DEFINED and OVERFLOW_DEFINED.  
+
+The rules governing the use of these keywords is as follows.  
+
+• Both actuals and overflows are defined in histogram files generated by RAINFLOW, 
+DAMAGECYCLE, HISTACCUM, HISTCONVERT, and the controller real-time process.  
+
+ 
+
+NOTE The overflows must be zero for all inputs to HISTACCUM. 
+
+ 
+
+• Both actuals and overflows are undefined in histogram files generated by DAMAGEHIST and 
+HISTMATH.  
+
+• Actuals are defined and overflows are undefined in PDHIST and LEVELCROSS.  
+
+ 
+
+ 36

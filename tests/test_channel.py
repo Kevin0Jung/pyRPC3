@@ -101,11 +101,10 @@ def test_apply_scale_valid():
 
 def test_apply_scale_invalid():
     """
-    Test that applying a non-numeric scale factor raises a ValueError.
+    Test that setting a non-numeric scale factor raises a ValueError.
     """
-    channel = Channel(number=10, scale="a")
     with pytest.raises(ValueError):
-        channel._apply_scale()
+        Channel(number=10, scale="a")
 
 
 def test_copy():

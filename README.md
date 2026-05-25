@@ -1,111 +1,99 @@
 # pyRPC3
 
-**pyRPC3** is a Python package for reading, processing, and writing RPC3 (.rsp, .rpc, .tim) files — a binary file format used to store time-series channel data. The package provides a `Channel` class for representing individual data channels, an `RPC3` class for reading and writing RPC3 files, and utility functions for normalizing channel data.
+Python tools for reading RPC3/RSP time-history files, exporting channel data to CSV, and rebuilding RPC3-compatible `.rsp` files from CSV or XLSX data.
 
-## Features
+The project focuses on practical RPC3 roundtrips:
 
-- **Reading RPC3 Files:** Parse RPC3 files to extract header information and channel data.
-- **Writing RPC3 Files:** Save processed channel data to a valid RPC3 file.
-- **Data Normalization:** Normalize channel data to 16-bit integer ranges.
-- **Interactive Plotting:** Visualize channel data using Matplotlib.
-- **Testing:** Comprehensive tests using `pytest`.
+- parse binary RPC3/RSP headers and channel data
+- export channels to CSV with optional metadata sidecars
+- rebuild `.rsp` files from CSV/XLSX inputs
+- preserve important source header metadata where possible
+- validate sample files with a two-phase roundtrip check
 
-## Installation
+## Requirements
 
-Clone the repository and install the required packages:
+- Python 3.10 or newer
+- NumPy
+- pandas, only for XLSX input support
+- matplotlib, only for `Channel.plot()`
+
+Install the basic dependencies:
 
 ```bash
-git clone https://github.com/galuszkm/pyRPC3.git
-cd pyRPC3
 pip install -r requirements.txt
 ```
 
-### Requirements
+## Command Line Usage
 
-- Python 3.9+
-- [NumPy](https://numpy.org/)
-- [Matplotlib](https://matplotlib.org/)
+Run the package CLI with `python -m src.cli`.
 
-**Interactive Plotting Note:**  
-If you need interactive plots and do not have Tkinter installed, you can use an alternative backend like PySide6. Install it with:
+Convert an RPC3/RSP file to CSV:
 
 ```bash
-pip install PySide6
+python -m src.cli to-csv sample_rsp_files/WM0826rsp.rsp -o output/WM0826rsp.csv --overwrite
 ```
 
-Then, set the backend in your script as follows:
+Export selected 1-based channels:
 
-```python
-import matplotlib
-matplotlib.use("QtAgg")  # Use an interactive Qt backend
-import matplotlib.pyplot as plt
-plt.ion()  # Enable interactive mode
+```bash
+python -m src.cli to-csv sample_rsp_files/WM0826rsp.rsp --channels 1 2 3 --overwrite
 ```
 
-## Usage
+Convert CSV back to RSP:
 
-### Reading an RPC3 File
+```bash
+python -m src.cli to-rsp output/WM0826rsp.csv -o output/WM0826rsp_roundtrip.rsp
+```
 
-To read an RPC3 file and print a summary of its channels:
+If the CSV has a matching `.rpc3meta.json` sidecar, the converter reuses preserved header metadata automatically. You can also provide a metadata file or template RSP explicitly:
+
+```bash
+python -m src.cli to-rsp output/WM0826rsp.csv --metadata output/WM0826rsp.rpc3meta.json
+python -m src.cli to-rsp data.csv --template-rsp sample_rsp_files/WM0826rsp.rsp
+```
+
+## Python API
 
 ```python
-from pyRPC3 import RPC3
+from src import RPC3, rsp_to_csv, csv_to_rpc3
 
-# Replace with the path to your RPC3 file
-rpc = RPC3("path/to/your_file.rsp", debug=True)
+rpc = RPC3("sample_rsp_files/WM0826rsp.rsp")
+if rpc.get_errors():
+    raise RuntimeError("; ".join(rpc.get_errors()))
+
 rpc.info()
-
-# Access individual channel data:
-for channel in rpc.channels:
-    print(f"Channel {channel.number}: {channel.name} [{channel.units}]")
+rsp_to_csv("sample_rsp_files/WM0826rsp.rsp", "output/WM0826rsp.csv", overwrite=True)
+csv_to_rpc3("output/WM0826rsp.csv", "output/WM0826rsp_roundtrip.rsp")
 ```
 
-### Writing an RPC3 File
+## Validation
 
-You can write a new RPC3 file from the channels loaded in an RPC3 instance. You can also exclude certain channels by number or name:
-
-```python
-from pyRPC3 import RPC3
-
-# Read an existing RPC3 file
-rpc = RPC3("path/to/your_file.rsp", debug=True)
-
-# Save to a new file, excluding channel number 2 and a channel named "TestChannel"
-rpc.save("path/to/new_file.rsp", exclude_channels=[2, "TestChannel"])
-```
-
-### Plotting Channel Data
-
-To plot the data of a channel using Matplotlib:
-
-```python
-import matplotlib.pyplot as plt
-from pyRPC3 import RPC3
-
-rpc = RPC3("path/to/your_file.rsp")
-# Plot the first channel (ensure interactive backend is set as described above)
-rpc.channels[0].plot()
-plt.show()
-```
-
-### Testing
-
-The repository includes a suite of tests using `pytest`. To run the tests, simply execute:
+Run the bundled sample roundtrip validation:
 
 ```bash
-pytest
+python validate_roundtrip_samples.py full
 ```
 
-Tests cover:
-- Reading RPC3 files and verifying channel properties.
-- Writing RPC3 files and round-tripping file data.
-- Data normalization and interactive plotting.
+The validator writes generated CSV/RSP files and summaries under `output/roundtrip_validation/`. That directory is intentionally ignored by Git because it can be regenerated from the checked-in samples.
 
-## Contributing
+## Project Layout
 
-Contributions, issues, and feature requests are welcome!  
-Please check the [issues page](https://github.com/galuszkm/pyRPC3/issues) and submit a pull request for any improvements or bug fixes.
+```text
+src/
+  Channel.py        Channel model and plotting helper
+  RPC3.py           RPC3/RSP reader and high-level save API
+  writter.py        RPC3 binary writer implementation
+  readtocsv.py      RSP to CSV export helpers
+  csvtorsp.py       CSV/XLSX to RSP import helpers
+  rpc3meta.py       Metadata sidecar helpers
+  cli.py            Command line interface
+sample_rsp_files/   Sample input files used by validation
+validate_roundtrip_samples.py
+RPC3_Format.txt     RPC3 format reference text
+```
 
-## License
+## Notes
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+- ASCII RPC3 data is currently not supported.
+- `HALF_FRAMES` input files are currently rejected by the reader.
+- Short-integer RSP output is quantized through the RPC3 scale factor. Small roundtrip differences are expected when source values cannot be represented exactly.
