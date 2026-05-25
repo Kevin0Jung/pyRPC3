@@ -96,4 +96,4 @@ RPC3_Format.txt     RPC3 format reference text
 
 - ASCII RPC3 data is currently not supported.
 - `HALF_FRAMES` input files are currently rejected by the reader.
-- Short-integer RSP output is quantized through the RPC3 scale factor. Small roundtrip differences are expected when source values cannot be represented exactly.
+- Short-integer RSP output is quantized through the RPC3 scale factor when no source metadata or template RSP is available. The bundled RSP -> CSV -> RSP validation path preserves source scale metadata and is expected to roundtrip exactly for the included samples.

@@ -374,4 +374,4 @@ def _default_header_date(current_time: datetime) -> str:
 
 
 def _format_float(value: float) -> str:
-    return f"{float(value):.6E}"
+    return f"{float(value):.12E}"

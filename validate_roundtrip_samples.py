@@ -33,6 +33,18 @@ def build_parser() -> argparse.ArgumentParser:
         nargs="*",
         help="Optional specific sample file names under sample_rsp_files. Defaults to all .rsp files there.",
     )
+    parser.add_argument(
+        "--max-csv-diff",
+        type=float,
+        default=0.0,
+        help="Maximum allowed absolute difference for the RSP to CSV phase.",
+    )
+    parser.add_argument(
+        "--max-rsp-diff",
+        type=float,
+        default=0.0,
+        help="Maximum allowed absolute difference for the CSV to RSP roundtrip phase.",
+    )
     return parser
 
 
@@ -65,11 +77,13 @@ def main() -> int:
             csv_report = run_csv_phase(sample_path, csv_path)
             sample_report["csv_phase"] = csv_report
             print_csv_phase(csv_report)
+            validate_csv_report(csv_report, args.max_csv_diff)
 
         if args.phase in {"rsp-only", "full"}:
             rsp_report = run_rsp_phase(sample_path, csv_path, rsp_path)
             sample_report["rsp_phase"] = rsp_report
             print_rsp_phase(rsp_report)
+            validate_rsp_report(rsp_report, args.max_rsp_diff)
 
         summary["samples"].append(sample_report)
 
@@ -185,6 +199,31 @@ def print_rsp_phase(report: dict[str, object]) -> None:
             rmse=float(report["rmse"]),
         )
     )
+
+
+def validate_csv_report(report: dict[str, object], max_abs_diff: float) -> None:
+    failures = []
+    for key in ("dt_match", "names_match", "units_match"):
+        if not report[key]:
+            failures.append(key)
+    if float(report["max_abs_diff"]) > max_abs_diff:
+        failures.append(f"max_abs_diff>{max_abs_diff}")
+    if failures:
+        raise ValueError(f"CSV validation failed for {report['csv_path']}: {', '.join(failures)}")
+
+
+def validate_rsp_report(report: dict[str, object], max_abs_diff: float) -> None:
+    failures = []
+    for key in ("dt_match", "sample_count_match", "channel_count_match"):
+        if not report[key]:
+            failures.append(key)
+    if float(report["max_abs_diff"]) > max_abs_diff:
+        failures.append(f"max_abs_diff>{max_abs_diff}")
+    if failures:
+        raise ValueError(
+            f"RSP roundtrip validation failed for {report['roundtrip_rsp_path']}: "
+            f"{', '.join(failures)}"
+        )
 
 
 def write_summary_files(summary: dict[str, object], output_root: Path) -> None:
